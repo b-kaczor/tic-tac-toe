@@ -2,6 +2,7 @@ import { useState } from "react"
 import GameBoard from "./components/GameBoard"
 import Player from "./components/Player"
 import Log from "./components/Log"
+import GameOver from "./components/GameOver"
 
 const EMPTY_BOARD = [
   [null, null, null],
@@ -34,8 +35,8 @@ function deriveActivePlayer(gameTurns) {
 function App() {
   const [gameTurns, setGameTurns] = useState([])
 
-  let winner
-  let gameBoard = EMPTY_BOARD
+  let winner, draw
+  let gameBoard = [...EMPTY_BOARD.map(el => [...el])]
 
   for(const turn of gameTurns) {
     const { square, symbol } = turn
@@ -58,6 +59,8 @@ function App() {
     }
   }
 
+  draw = !winner && gameTurns.length === 9
+
   function handleSelectSquare(rowIndex, colIndex) {
     setGameTurns(prevTurns => {
       const updatedTurns = [
@@ -69,13 +72,17 @@ function App() {
     })
   }
 
+  function handleRestart() {
+    setGameTurns([])
+  }
+
   return <main>
     <div id="game-container">
       <ol id="players" className="highlight-player">
         <Player active={activeSymbol === "X"} initialName="Player 1" symbol="X" />
         <Player active={activeSymbol === "O"} initialName="Player 2" symbol="O" />
       </ol>
-      {winner && <p>{activeSymbol} won!</p>}
+      {(winner || draw) && <GameOver winner={winner} onRestart={handleRestart} />}
       <GameBoard
         onSelectSquare={handleSelectSquare}
         board={gameBoard} />
