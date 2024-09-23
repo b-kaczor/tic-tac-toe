@@ -32,11 +32,7 @@ function deriveActivePlayer(gameTurns) {
   return currentSymbol
 }
 
-function App() {
-  const [gameTurns, setGameTurns] = useState([])
-  const [players, setPlayers] = useState({ X: "Player1" }, { O: "Player2" })
-
-  let winner, draw
+function buildBoard(gameTurns) {
   let gameBoard = [...EMPTY_BOARD.map(el => [...el])]
 
   for(const turn of gameTurns) {
@@ -44,8 +40,11 @@ function App() {
     gameBoard[square.row][square.col] = symbol
   }
 
-  let activeSymbol = deriveActivePlayer(gameTurns)
+  return gameBoard
+}
 
+function setWinner(gameBoard, players) {
+  let winner
   for (const winCondition of WIN_CONDITIONS) {
     const firstSquareSymbol = gameBoard[winCondition[0].row][winCondition[0].col]
     const secondSquareSymbol = gameBoard[winCondition[1].row][winCondition[1].col]
@@ -60,7 +59,17 @@ function App() {
     }
   }
 
-  draw = !winner && gameTurns.length === 9
+  return winner
+}
+
+function App() {
+  const [gameTurns, setGameTurns] = useState([])
+  const [players, setPlayers] = useState({ X: "Player1", O: "Player2" })
+
+  let gameBoard = buildBoard(gameTurns)
+  let activeSymbol = deriveActivePlayer(gameTurns)
+  let winner = setWinner(gameBoard, players)
+  let draw = !winner && gameTurns.length === 9
 
   function handleSelectSquare(rowIndex, colIndex) {
     setGameTurns(prevTurns => {
@@ -83,11 +92,12 @@ function App() {
     })
   }
 
+  console.log(players)
   return <main>
     <div id="game-container">
       <ol id="players" className="highlight-player">
-        <Player active={activeSymbol === "X"} initialName="Player 1" symbol="X" onPlayerChange={handlePlayerChange} />
-        <Player active={activeSymbol === "O"} initialName="Player 2" symbol="O" onPlayerChange={handlePlayerChange} />
+        <Player active={activeSymbol === "X"} initialName={players.X} symbol="X" onPlayerChange={handlePlayerChange} />
+        <Player active={activeSymbol === "O"} initialName={players.O} symbol="O" onPlayerChange={handlePlayerChange} />
       </ol>
       {(winner || draw) && <GameOver winner={winner} onRestart={handleRestart} />}
       <GameBoard
